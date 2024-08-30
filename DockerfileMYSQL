@@ -1,0 +1,35 @@
+# Etapa de construcción
+FROM mysql:8 as builder
+
+# Configuración de MySQL
+ENV MYSQL_ROOT_PASSWORD=password
+ENV MYSQL_DATABASE=sakila
+ENV MYSQL_USER=sakila
+ENV MYSQL_PASSWORD=password
+
+# Copiar los archivos SQL al directorio de inicialización
+COPY ./sakila-schema.sql /docker-entrypoint-initdb.d/01-schema.sql
+COPY ./sakila-data.sql /docker-entrypoint-initdb.d/02-data.sql
+
+# Ejecutar el entrypoint para preparar la base de datos
+# Nota: La línea siguiente solo se usa para preparar el contenedor para la importación de datos
+RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
+RUN /usr/local/bin/docker-entrypoint.sh mysqld
+
+# Etapa final
+FROM mysql:8
+
+# Configuración de MySQL
+ENV MYSQL_ROOT_PASSWORD=password
+ENV MYSQL_DATABASE=sakila
+ENV MYSQL_USER=sakila
+ENV MYSQL_PASSWORD=password
+
+# Copiar los datos desde la etapa de construcción
+COPY --from=builder /var/lib/mysql /data
+RUN rm -rf /var/lib/mysql/*
+RUN mv /data/* /var/lib/mysql/
+
+# Configuración de los permisos de usuario
+USER mysql
+

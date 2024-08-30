@@ -1,0 +1,14 @@
+# Dockerfile
+FROM python:3.9-slim
+
+# Instalar dependencias
+RUN pip install pandas sqlalchemy pymysql
+
+# Copiar el archivo Python al contenedor
+COPY sakila_analysis.py /app/sakila_analysis.py
+
+# Establecer el directorio de trabajo
+WORKDIR /app
+
+# Comando para ejecutar el archivo Python
+CMD ["python", "sakila_analysis.py"]

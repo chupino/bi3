@@ -1,0 +1,28 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  mysql:
+    build:
+      context: .
+      dockerfile: DockerfileMYSQL
+    ports:
+      - "3306:3306"
+    networks:
+      - sakila_net
+
+  python:
+    build:
+      context: .
+      dockerfile: DockerfilePython
+    depends_on:
+      - mysql
+    networks:
+      - sakila_net
+
+networks:
+  sakila_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
